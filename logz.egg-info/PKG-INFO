@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: logz
+Version: 0.12
+Summary: easy log use for extra infos
+Home-page: https://github.com/hanzhichao/logz
+Author: Han Zhichao
+Author-email: superhin@126.com
+License: MIT license
+Description: # log
+        
+        > pip install logz
+        
+        
+        ```python
+        from logz import log
+        
+        log.file = 'logs/%Y-%m-%d.log'
+        log.level = 'info'
+        log.format = '%(levelname)s %(name)s %(user)s %(message)s'
+        log.file = '%Y-%m-%d.html'
+        log.debug({'foo': 'bar'}, indent=2)
+        log.info("hello", extra={'user': 'hanzhichao'})
+        
+        ```
+        
+        output:
+        ```
+        2019-12-09 19:30:16,419 DEBUG log None ->
+        {
+          "foo": "bar"
+        }
+        2019-12-09 19:30:16,419 INFO log hanzhichao hello
+        ```
+        
+Keywords: logz,extra,log,logging
+Platform: UNKNOWN
+Classifier: Framework :: Pytest
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Testing
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.7
+Description-Content-Type: text/markdown
