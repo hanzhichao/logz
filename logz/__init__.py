@@ -99,9 +99,12 @@ class Log(object):
         return self.__file
 
     @file.setter
-    def file(self, value):
-        value = datetime.now().strftime(value)
-        fh = logging.FileHandler(value, 'a', encoding='utf-8')
+    def file(self, value):  # todo
+        if '%' in value:
+            value = datetime.now().strftime(value)
+            fh = DayRotatingHandler(value, 'a', encoding='utf-8')
+        else:
+            fh = logging.handlers.RotatingFileHandler(value, 'a', encoding='utf-8', maxBytes=10240, backupCount=5)
         fh.setFormatter(self.__format)
         self.__file = value
         self.__logger.addHandler(fh)
@@ -110,53 +113,51 @@ class Log(object):
     def logger(self):
         return self.__logger
 
-    def log(self, level, msg, *args, **kwargs):
+    def log(self, level, *args, **kwargs):
+        msg = ' '.join([str(arg) for arg in args])
         if self.__extra:
             extra = kwargs.get('extra', {})
             kwargs['extra'] = self.__extra
             kwargs['extra'].update(extra)
 
-        if 'indent' in kwargs:
+        if 'indent' in kwargs:  # todo
             indent = kwargs.pop('indent')
             if indent and isinstance(msg, dict):
-                msg = '->\n' + json.dumps(msg, indent=indent, ensure_ascii=False)
-
-        if not isinstance(msg, str):
-            msg = str(msg)
+                msg = '>\n' + json.dumps(msg, indent=indent, ensure_ascii=False)
 
         if level == 'critical':
-            self.__logger.critical(msg, *args, **kwargs)
+            self.__logger.critical(msg, **kwargs)
         elif level == 'error':
-            self.__logger.error(msg, *args, **kwargs)
+            self.__logger.error(msg, **kwargs)
         elif level == 'exception':
-            self.__logger.exception(msg, *args, **kwargs)
+            self.__logger.exception(msg, **kwargs)
         elif level == 'warning':
-            self.__logger.warning(msg, *args, **kwargs)
+            self.__logger.warning(msg, **kwargs)
         elif level == 'info':
-            self.__logger.info(msg, *args, **kwargs)
+            self.__logger.info(msg, **kwargs)
         else:
-            self.__logger.debug(msg, *args, **kwargs)
+            self.__logger.debug(msg, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
-        self.log('debug', msg, *args, **kwargs)
+    def debug(self, *args, **kwargs):
+        self.log('debug', *args, **kwargs)
 
-    def info(self, msg, *args, **kwargs):
-        self.log('info', msg, *args, **kwargs)
+    def info(self, *args, **kwargs):
+        self.log('info', *args, **kwargs)
 
-    def warn(self, msg, *args, **kwargs):
-        self.log('warning', msg, *args, **kwargs)
+    def warn(self, *args, **kwargs):
+        self.log('warning', *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
-        self.log('warning', msg, *args, **kwargs)
+    def warning(self, *args, **kwargs):
+        self.log('warning', *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
-        self.log('error', msg, *args, **kwargs)
+    def error(self, *args, **kwargs):
+        self.log('error', *args, **kwargs)
 
-    def exception(self, msg, *args, **kwargs):
-        self.log('exception', msg, *args, **kwargs)
+    def exception(self, *args, **kwargs):
+        self.log('exception', *args, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
-        self.log('critical', msg, *args, **kwargs)
+    def critical(self, *args, **kwargs):
+        self.log('critical', *args, **kwargs)
 
 
 log = Log()
@@ -189,7 +190,7 @@ def log_action():
 
 if __name__ == '__main__':
     log = Log()
-    log.info('hello')
+    log.info('hello%s' % 4,1,2,3)
     log.file = '%Y-%m-%d.log'
     log.format = '%(levelname)s %(name)s %(user)s %(message)s'
     # log.info({'hello': '中文'}, indent=2)
