@@ -113,8 +113,9 @@ class Log(object):
     def logger(self):
         return self.__logger
 
-    def log(self, level, *args, **kwargs):
-        msg = ' '.join([str(arg) for arg in args])
+    def log(self, level, msg, *args, **kwargs):
+        if args:
+            msg = '%s %s' % (str(msg), ' '.join([str(arg) for arg in args]))
         if self.__extra:
             extra = kwargs.get('extra', {})
             kwargs['extra'] = self.__extra
@@ -123,7 +124,7 @@ class Log(object):
         if 'indent' in kwargs:  # todo
             indent = kwargs.pop('indent')
             if indent and isinstance(msg, dict):
-                msg = '>\n' + json.dumps(msg, indent=indent, ensure_ascii=False)
+                msg = '->\n' + json.dumps(msg, indent=indent, ensure_ascii=False)
 
         if level == 'critical':
             self.__logger.critical(msg, **kwargs)
@@ -138,26 +139,26 @@ class Log(object):
         else:
             self.__logger.debug(msg, **kwargs)
 
-    def debug(self, *args, **kwargs):
-        self.log('debug', *args, **kwargs)
+    def debug(self, msg, *args, **kwargs):
+        self.log('debug', msg, *args, **kwargs)
 
-    def info(self, *args, **kwargs):
-        self.log('info', *args, **kwargs)
+    def info(self, msg, *args, **kwargs):
+        self.log('info', msg, *args, **kwargs)
 
-    def warn(self, *args, **kwargs):
-        self.log('warning', *args, **kwargs)
+    def warn(self, msg, *args, **kwargs):
+        self.log('warning', msg, *args, **kwargs)
 
-    def warning(self, *args, **kwargs):
-        self.log('warning', *args, **kwargs)
+    def warning(self, msg, *args, **kwargs):
+        self.log('warning', msg, *args, **kwargs)
 
-    def error(self, *args, **kwargs):
-        self.log('error', *args, **kwargs)
+    def error(self, msg, *args, **kwargs):
+        self.log('error', msg, *args, **kwargs)
 
-    def exception(self, *args, **kwargs):
-        self.log('exception', *args, **kwargs)
+    def exception(self, msg, *args, **kwargs):
+        self.log('exception', msg, *args, **kwargs)
 
-    def critical(self, *args, **kwargs):
-        self.log('critical', *args, **kwargs)
+    def critical(self, msg, *args, **kwargs):
+        self.log('critical', msg, *args, **kwargs)
 
 
 log = Log()
@@ -172,7 +173,7 @@ def _to_string(args, kwargs):
     return ','.join(params)
 
 
-def log_action():
+def logit():
     def _log_action(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -189,11 +190,6 @@ def log_action():
 
 
 if __name__ == '__main__':
-    log = Log()
-    log.info('hello%s' % 4,1,2,3)
-    log.file = '%Y-%m-%d.log'
-    log.format = '%(levelname)s %(name)s %(user)s %(message)s'
-    # log.info({'hello': '中文'}, indent=2)
-    user = '8888'
-    # log.file = 'ddd.log'
-    log.info('777')
+    log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
+    log.info('hello with no user')
+    log.info('hello with kevin', extra={'user': 'kevin'})

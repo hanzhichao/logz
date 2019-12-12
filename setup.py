@@ -18,7 +18,6 @@ setup(
     author="Han Zhichao",
     author_email='superhin@126.com',
     description='easy log use for extra infos',
-    # long_description='easy log use for extra infos',
     long_description=read_file('README.md'),
     long_description_content_type="text/markdown",  # 新参数
     classifiers=[
@@ -36,7 +35,7 @@ setup(
     packages=find_packages(include=['logz']),
     setup_requires=setup_requirements,
     url='https://github.com/hanzhichao/logz',
-    version='0.12',
+    version='0.13',
     zip_safe=True,
     install_requires=[]
 )
