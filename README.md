@@ -143,3 +143,5 @@ output:
 - more decorators such as @explain @exception @timeit @email
 - support verbosity
 
+## Bugs
+- logit not support instance method

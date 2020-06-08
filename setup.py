@@ -22,14 +22,13 @@ setup(
     long_description_content_type="text/markdown",  # 新参数
     classifiers=[
         'Programming Language :: Python',
-        'Topic :: Software Development :: logging',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.7',
     ],
     license="MIT license",
     include_package_data=True,
     keywords=[
-        'logz', 'extra', 'log', 'logging',
+        'logz', 'extra', 'log',
     ],
     name='logz',
     packages=find_packages(include=['logz']),
