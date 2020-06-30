@@ -6,6 +6,7 @@ easy use for log with extra infos
 - very easy to use
 - log file name change from date
 - DayRottingLogger
+- log to email
 - safe extra fields
 - log multi vars and not just str
 - multiline log and indent for json
@@ -45,7 +46,7 @@ AssertionError
 ```
 
 ### log multi vars one time
-```
+```python
 a = 'hello'
 b = 1
 c = [2]
@@ -59,13 +60,13 @@ output:
 
 > Note: Change args form supporting %s format to supporting multi vars
 if you want to use something like:
-```
+```python
 import logging
 logging.info('name=%s,age=%d', 'kevin',18)
 ```
 you neet use like below:
-```
-form logz import log
+```python
+from logz import log
 log.info('name=%s,age=%d' % ('kevin',18))
 ```
 output:
@@ -74,7 +75,8 @@ output:
 ```
 
 ### log to file
-```
+```python
+from logz import log
 log.file='logs/project.log'
 ```
 > Note: logs directory must be exists
@@ -82,10 +84,22 @@ log.file='logs/project.log'
 By default it's a rotting file and maxBytes=10240 and backUps=5
 
 ### log to a file with name changes with date
-```
+```python
+from logz import log
 log.file='logs/%Y-%m-%d.log'
 ```
 And it's a day rotting file
+
+
+### log to email 
+```python
+from logz import log
+log.email = dict(host="smtp.sina.com", user='test_results@sina.com', password='***',
+                    receivers=['superhin@126.com'], capacity=10)
+
+for i in range(20):
+    log.error('这个是个错误日志')
+```
 
 ### change log level
 ```
@@ -119,7 +133,8 @@ output:
 ```
 
 ### multiline and indent for dict
-```
+```python
+from logz import log
 log.info({'foo': 'bar'}, indent=2)
 ```
 
@@ -131,10 +146,27 @@ output:
 }
 ```
 
+### user logit
+```python
+from logz import logit
+
+@logit
+def add(a, b):
+    return a+b
+
+def calc():
+    add(1, 20)
+
+calc()
+```
+output:
+```
+2020-06-30 12:39:06,124 DEBUG calc -> add(1,20) return: 21 duration: 0.017280101776123047s
+```
+
 ## todo
 - log file to config maxBytes or else
 - log to html
-- log to email
 - log to db
 - log diff
 - log assert
@@ -143,5 +175,3 @@ output:
 - more decorators such as @explain @exception @timeit @email
 - support verbosity
 
-## Bugs
-- logit not support instance method
