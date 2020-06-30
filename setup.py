@@ -34,7 +34,7 @@ setup(
     packages=find_packages(include=['logz']),
     setup_requires=setup_requirements,
     url='https://github.com/hanzhichao/logz',
-    version='0.13',
+    version='0.14',
     zip_safe=True,
     install_requires=[]
 )

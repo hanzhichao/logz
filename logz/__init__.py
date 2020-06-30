@@ -1,10 +1,16 @@
 """日志配置"""
 import re
+import os
+import io
 import json
 from datetime import datetime
 import time
 import inspect
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from logging import addLevelName, currentframe
+import traceback
 from functools import wraps
 from logging.handlers import BaseRotatingHandler
 
@@ -13,6 +19,15 @@ LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
 
 
 LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+
+LOG_LEVEL_MAP = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'warn': logging.WARN,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL,
+}
 
 
 class DayRotatingHandler(BaseRotatingHandler):
@@ -32,24 +47,133 @@ class DayRotatingHandler(BaseRotatingHandler):
         self._open()
 
 
+class BufferingSMTPHandler(logging.handlers.BufferingHandler):
+    def __init__(self, host, user, password, receivers: list, subject, capacity, port=None, sender=None, ssl=True):
+        logging.handlers.BufferingHandler.__init__(self, capacity)
+        self.host = host
+        self.port = port
+        self.ssl = ssl
+        self.user = user
+        self.password = password
+        self.subject = subject
+        self.sender = sender or user
+        self.receivers = receivers if isinstance(receivers, list) else [receivers]
+
+    def send_email(self):
+        smtp = smtplib.SMTP_SSL(self.host, self.port) if self.ssl else smtplib.SMTP(self.host, self.port)
+        body = ''
+        for record in self.buffer:
+            s = self.format(record)
+            body += s + "\r\n"
+
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['from'] = self.sender
+        msg['to'] = ','.join(self.receivers)
+        msg['subject'] = self.subject
+        smtp.login(self.user, self.password)
+        for receiver in self.receivers:
+            smtp.sendmail(self.sender, receiver, msg.as_string())
+
+    def flush(self):
+        if len(self.buffer) > 0:
+            self.send_email()
+            self.buffer = []
+
+
 class HTMLHandler(logging.FileHandler):
     pass
 
 
+class Logger(logging.Logger):
+    """Rewrite findCaller to show the real funcName"""
+    def findCaller(self, stack_info=False):
+        _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
+        f = currentframe()
+        if f is not None:
+            f = f.f_back
+            try:
+                f = getattr(f.f_back, 'f_back', None)
+            except:
+                pass
+            rv = "(unknown file)", 0, "(unknown function)", None
+        while hasattr(f, "f_code"):
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename == _srcfile:
+                f = f.f_back
+                try:
+                    f = getattr(f.f_back, 'f_back', None)
+                except:
+                    pass
+                continue
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                sio.write('Stack (most recent call last):\n')
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+                sio.close()
+            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+            break
+        return rv
+
+
+class DecoLogger(logging.Logger):
+    """Rewrite findCaller to show the real funcName for logit decorator"""
+    def findCaller(self, stack_info=False):
+        _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
+        f = currentframe()
+        if f is not None:
+            f = f.f_back
+            try:
+                f = getattr(f.f_back, 'f_back', None)
+                f = getattr(f.f_back, 'f_back', None)
+            except:
+                pass
+            rv = "(unknown file)", 0, "(unknown function)", None
+        while hasattr(f, "f_code"):
+            co = f.f_code
+            filename = os.path.normcase(co.co_filename)
+            if filename == _srcfile:
+                f = f.f_back
+                try:
+                    f = getattr(f.f_back, 'f_back', None)
+                    f = getattr(f.f_back, 'f_back', None)
+                except:
+                    pass
+                continue
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                sio.write('Stack (most recent call last):\n')
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+                sio.close()
+            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
+            break
+        return rv
+
+
 class Log(object):
-    def __init__(self, name=__name__):
+    def __init__(self, name=__name__, logger_class=None):
         self.name = name
-        self.__logger = logging.getLogger(name)
+        # self.__logger = logging.getLogger(name)
+        logger_class = logger_class or Logger
+        self.__logger = logger_class(name)
         self.__format = logging.Formatter(LOG_FORMAT)
         self.__level = logging.DEBUG
         self.__extra = None
         self.__file = None
+        self.__email = None
 
         self.verbosity = None
         self.filter = None
         self.hook = None  # todo
         self.html = None
-        self.email = None
         self.db = None
         self.server = None
 
@@ -63,22 +187,16 @@ class Log(object):
     def level(self):
         return self.__level
 
-    @level.setter
-    def level(self, value):
+    def _parse_level(self, value):
         if isinstance(value, int) and value in (0,10,20,30,40,50):
-            self.__level = value
+            return value
         if isinstance(value, str):
             value = value.lower()
-            if value == 'debug':
-                self.__level = logging.DEBUG
-            elif value == 'info':
-                self.__level = logging.INFO
-            elif value in ('warn', 'warning'):
-                self.__level = logging.WARNING
-            elif value == 'error':
-                self.__level = logging.ERROR
-            elif value == 'critical':
-                self.__level = logging.CRITICAL
+            return LOG_LEVEL_MAP.get(value, logging.DEBUG)
+
+    @level.setter
+    def level(self, value):
+        self.__level = self._parse_level(value)
         self.__logger.setLevel(self.__level)
 
     @property
@@ -104,10 +222,36 @@ class Log(object):
             value = datetime.now().strftime(value)
             fh = DayRotatingHandler(value, 'a', encoding='utf-8')
         else:
-            fh = logging.handlers.RotatingFileHandler(value, 'a', encoding='utf-8', maxBytes=10240, backupCount=5)
+            # fh = logging.handlers.RotatingFileHandler(value, 'a', encoding='utf-8', maxBytes=10240, backupCount=5)
+            fh = logging.FileHandler(value, 'a', encoding='utf-8')
         fh.setFormatter(self.__format)
         self.__file = value
         self.__logger.addHandler(fh)
+
+    @property
+    def email(self):
+        return self.__email
+
+    @email.setter
+    def email(self, value):
+        self.__email = value
+        host = value.get('host')
+        port = value.get('port')
+        ssl = value.get('ssl')
+        user = value.get('user')
+        password = value.get('password')
+        sender = value.get('sender') or user
+        receivers = value.get('receivers')
+        capacity = value.get('capacity', 10)
+        subject = value.get('subject', '[logz]log message')
+        level = value.get('level')
+
+        log_level = self._parse_level(level) if level else logging.ERROR
+        # eh = logging.handlers.SMTPHandler(host, sender, receivers, subject, credentials=(user, password), secure=())
+        eh = BufferingSMTPHandler(host, user, password, receivers, subject, capacity, port, sender, ssl)
+        eh.setLevel(log_level)
+        eh.setFormatter(self.__format)
+        self.__logger.addHandler(eh)
 
     @property
     def logger(self):
@@ -173,21 +317,19 @@ def _to_string(args, kwargs):
     return ','.join(params)
 
 
-def logit():
-    def _log_action(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            parent_action = inspect.stack()[1][3].strip()
+def logit(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        parent_action = inspect.stack()[1][3].strip()
+        log = Log(logger_class=DecoLogger)
+        # log.format = '%(asctime)s %(levelname)s %(name)s %(filename)s [%(funcName)s] %(lineno)d %(message)s'
+        result = func(*args, **kwargs)
+        log.debug(f"{parent_action} -> {func.__name__}({_to_string(args, kwargs)}) return: {result} "
+                 f"duration: {time.time() - start}s")
 
-            result = func(*args, **kwargs)
-            logging.info(f"{parent_action} -> {func.__name__}({_to_string(args, kwargs)}) return: {result} "
-                     f"duration: {time.time() - start}s")
-
-            return result
-        return wrapper
-    return _log_action
-
+        return result
+    return wrapper
 
 if __name__ == '__main__':
     log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
