@@ -6,11 +6,13 @@ import json
 from datetime import datetime
 import time
 import inspect
+from collections import defaultdict
 import logging
 import smtplib
 from email.mime.text import MIMEText
 from logging import addLevelName, currentframe
 import traceback
+import threading
 from functools import wraps
 from logging.handlers import BaseRotatingHandler
 
@@ -177,6 +179,8 @@ class Log(object):
         self.db = None
         self.server = None
 
+        self.outputs = defaultdict(str)
+
         ch = logging.StreamHandler()
         ch.setFormatter(self.__format)
 
@@ -282,6 +286,17 @@ class Log(object):
             self.__logger.info(msg, **kwargs)
         else:
             self.__logger.debug(msg, **kwargs)
+
+    def print(self, msg, *args, **kwargs):
+        thread_id = str(threading.current_thread().ident)
+        if args:
+            msg = '%s %s' % (str(msg), ' '.join([str(arg) for arg in args]))
+        self.outputs[thread_id] += str(msg)
+        self.log('info', msg, *args, **kwargs)
+
+    def get_output(self):
+        thread_id = str(threading.current_thread().ident)
+        return self.outputs[thread_id]
 
     def debug(self, msg, *args, **kwargs):
         self.log('debug', msg, *args, **kwargs)
