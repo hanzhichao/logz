@@ -1,2 +1,0 @@
-2022-02-15 11:51:26,644 INFO None hello with no user
-2022-02-15 11:51:26,644 INFO kevin hello with kevin
