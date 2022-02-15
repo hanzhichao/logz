@@ -88,7 +88,7 @@ class HTMLHandler(logging.FileHandler):
 
 class Logger(logging.Logger):
     """Rewrite findCaller to show the real funcName"""
-    def findCaller(self, stack_info=False):
+    def findCaller(self, stack_info=False, stacklevel=1):
         _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
         f = currentframe()
         if f is not None:
@@ -124,7 +124,7 @@ class Logger(logging.Logger):
 
 class DecoLogger(logging.Logger):
     """Rewrite findCaller to show the real funcName for logit decorator"""
-    def findCaller(self, stack_info=False):
+    def findCaller(self, stack_info=False, stacklevel=1):
         _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
         f = currentframe()
         if f is not None:
@@ -346,7 +346,9 @@ def logit(func):
         return result
     return wrapper
 
+
 if __name__ == '__main__':
     log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
+    log.file = 'log%Y%m%d.txt'
     log.info('hello with no user')
     log.info('hello with kevin', extra={'user': 'kevin'})

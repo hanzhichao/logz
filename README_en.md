@@ -1,24 +1,24 @@
-### Logz
-Log Easy 快速上手的日志记录工具
+# logz
+easy use for log with extra infos
 
-### 特性
+## Features
 
-- 上手容易
-- 日志文件按日期动态生成
+- very easy to use
+- log file name change from date
 - DayRottingLogger
-- 记录日志到Email
+- log to email
 - safe extra fields
-- 支持多个变量
+- log multi vars and not just str
 - multiline log and indent for json
 - debug as default level
 
-### 安装方法
+## Install
 ```
 $ pip install logz
 ```
 
-### 使用方法
-#### 简单使用
+## Use
+### Simple Use
 
 ```python
 from logz import log
@@ -32,7 +32,7 @@ try:
 except AttributeError as ex:
     log.exception(ex)
 ```
-输出:
+output:
 ```
 2019-12-12 22:39:43,584 DEBUG debug msg
 2019-12-12 22:39:43,584 INFO info msg
@@ -45,7 +45,7 @@ Traceback (most recent call last):
 AssertionError
 ```
 
-### 一次输出多个变量
+### log multi vars one time
 ```python
 a = 'hello'
 b = 1
@@ -53,37 +53,37 @@ c = [2]
 d = {'name': 'kevin'}
 log.info(a,b,c,d)
 ```
-输出:
+output:
 ```
 2019-12-12 22:40:20,221 INFO hello 1 [2] {'name': 'kevin'}
 ```
 
-> 注意: log方法中原来支持%s格式话的变量被修改为支持log多个变量
-如果你想使用原有的日志方式:
+> Note: Change args form supporting %s format to supporting multi vars
+if you want to use something like:
 ```python
 import logging
 logging.info('name=%s,age=%d', 'kevin',18)
 ```
-你可以将变量直接格式化到字符串中，如下：
+you neet use like below:
 ```python
 from logz import log
 log.info('name=%s,age=%d' % ('kevin',18))
 ```
-输出:
+output:
 ```
 2019-12-12 22:41:58,024 INFO name=kevin,age=18
 ```
 
-#### 日志文件
+### log to file
 ```python
 from logz import log
 log.file='logs/project.log'
 ```
-> 注意: 日志目录必须存在
+> Note: logs directory must be exists
 
 By default it's a rotting file and maxBytes=10240 and backUps=5
 
-#### 按日期记录日志
+### log to a file with name changes with date
 ```python
 from logz import log
 log.file='logs/%Y-%m-%d.log'
@@ -91,7 +91,7 @@ log.file='logs/%Y-%m-%d.log'
 And it's a day rotting file
 
 
-#### 记录日志到Email中
+### log to email 
 ```python
 from logz import log
 log.email = dict(host="smtp.sina.com", user='test_results@sina.com', password='***',
@@ -101,38 +101,38 @@ for i in range(20):
     log.error('这个是个错误日志')
 ```
 
-#### 修改日志等级
+### change log level
 ```
 log.level = 'info'
 log.level = 20
 log.debug('not show')
 log.info('show info')
 ```
-输出:
+output:
 ```
 2019-12-12 22:43:24,479 INFO show info
 ```
 
 > level string is not case sensitive
 
-#### 修改日志格式
+### change log format
 ```
 log.format = '%(asctime)s %(levelname)s %(name)s %(message)s'
 ```
 
-#### 使用额外字段
+### with extra fields
 ```
 log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
 log.info('hello with no user')
 log.info('hello with kevin', extra={'user': 'kevin'})
 ```
-输出:
+output:
 ```
 2019-12-12 22:45:18,604 INFO None hello with no user
 2019-12-12 22:45:18,604 INFO kevin hello with kevin
 ```
 
-### 多行和字段缩进
+### multiline and indent for dict
 ```python
 from logz import log
 log.info({'foo': 'bar'}, indent=2)
@@ -146,7 +146,7 @@ output:
 }
 ```
 
-#### 使用logit装饰器
+### user logit
 ```python
 from logz import logit
 
@@ -159,12 +159,12 @@ def calc():
 
 calc()
 ```
-输出:
+output:
 ```
 2020-06-30 12:39:06,124 DEBUG calc -> add(1,20) return: 21 duration: 0.017280101776123047s
 ```
 
-### 待完善
+## todo
 - log file to config maxBytes or else
 - log to html
 - log to db

@@ -20,6 +20,7 @@ class Demo(object):
         log.info('a+b=', a + b)
         return a + b
 
+
 def test_logit():
     log.info('hello, logit')
     sum = add(1, 20)
@@ -38,5 +39,3 @@ def test_log_smtp():
 
     for i in range(20):
         log.error('这个是个错误日志')
-
-calc()
