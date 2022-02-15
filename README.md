@@ -22,6 +22,7 @@ $ pip install logz
 
 ```python
 from logz import log
+
 log.debug('debug msg')
 log.info('info msg')
 log.warning('warning msg')
@@ -29,7 +30,7 @@ log.error('error msg')
 log.critical('critical mst')
 try:
     assert 0
-except AttributeError as ex:
+except AssertionError as ex:
     log.exception(ex)
 ```
 输出:
@@ -46,6 +47,7 @@ AssertionError
 ```
 
 ### 一次输出多个变量
+像print函数一样,log.info等方法可以一次输出多个变量
 ```python
 a = 'hello'
 b = 1
@@ -66,7 +68,6 @@ logging.info('name=%s,age=%d', 'kevin',18)
 ```
 你可以将变量直接格式化到字符串中，如下：
 ```python
-from logz import log
 log.info('name=%s,age=%d' % ('kevin',18))
 ```
 输出:
@@ -76,8 +77,8 @@ log.info('name=%s,age=%d' % ('kevin',18))
 
 #### 日志文件
 ```python
-from logz import log
-log.file='logs/project.log'
+log.file='tmps/tmp.log'
+log.info('info msg')
 ```
 > 注意: 日志目录必须存在
 
@@ -85,15 +86,17 @@ By default it's a rotting file and maxBytes=10240 and backUps=5
 
 #### 按日期记录日志
 ```python
-from logz import log
-log.file='logs/%Y-%m-%d.log'
+log.file='tmps/%Y-%m-%d.log'
+log.info('info msg')
 ```
-And it's a day rotting file
+结果是一个按天滚动的日志文件，特别对于Flask等搭建等常驻型，Web服务，日志可以按天在新的日期自动生成新的日志，而无需重启
 
 
-#### 记录日志到Email中
+
+#### 记录日志到Email中  
+> 废弃 ⚠️
+
 ```python
-from logz import log
 log.email = dict(host="smtp.sina.com", user='test_results@sina.com', password='***',
                     receivers=['superhin@126.com'], capacity=10)
 
@@ -104,7 +107,7 @@ for i in range(20):
 #### 修改日志等级
 ```
 log.level = 'info'
-log.level = 20
+log.level = logging.INFO
 log.debug('not show')
 log.info('show info')
 ```
@@ -113,18 +116,18 @@ log.info('show info')
 2019-12-12 22:43:24,479 INFO show info
 ```
 
-> level string is not case sensitive
+> 使用字符串赋值level时大小写不敏感, `log.level = 'info'` 或 `log.level = 'INFO'`都可以
 
 #### 修改日志格式
 ```
-log.format = '%(asctime)s %(levelname)s %(name)s %(message)s'
+log.format = '%(levelname)s|%(filename)s|%(funcName)s|%(lineno)d|%(message)s'
 ```
 
 #### 使用额外字段
 ```
 log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
 log.info('hello with no user')
-log.info('hello with kevin', extra={'user': 'kevin'})
+log.info('hello with kevin', extra={'user': 'Kevin'})
 ```
 输出:
 ```
@@ -132,13 +135,12 @@ log.info('hello with kevin', extra={'user': 'kevin'})
 2019-12-12 22:45:18,604 INFO kevin hello with kevin
 ```
 
-### 多行和字段缩进
+### JSON多行输出和字段缩进
 ```python
-from logz import log
 log.info({'foo': 'bar'}, indent=2)
 ```
 
-output:
+输出:
 ```
 2019-12-09 19:30:16,419 DEBUG log None ->
 {
@@ -147,13 +149,14 @@ output:
 ```
 
 #### 使用logit装饰器
+使用logit装饰器在调用函数时将自动输出`DEBUG`日志，包含调用方、调用参数，返回值，耗时信息等
 ```python
 from logz import logit
 
 @logit
 def add(a, b):
     return a+b
-
+    
 def calc():
     add(1, 20)
 
@@ -163,6 +166,18 @@ calc()
 ```
 2020-06-30 12:39:06,124 DEBUG calc -> add(1,20) return: 21 duration: 0.017280101776123047s
 ```
+
+对象方法中使用logit
+```python
+class Calculator(object):
+    @logit
+    def add(self, a, b):
+        return a + b
+            
+
+Calculator.add(2,30)
+```
+
 
 ### 待完善
 - log file to config maxBytes or else
@@ -174,4 +189,17 @@ calc()
 - log to server using websocket
 - more decorators such as @explain @exception @timeit @email
 - support verbosity
+
+### Bugs
+- [ ] logit装饰器在对象方法中报错
+- [ ] 还原为logging.getLogger后`%(funcName)s`字段显示不正确
+
+### 对比
+logging |logz |logzero |loguru
+---| --- | --- | ---
+功能 | 
+易用性 | 
+
+
+
 

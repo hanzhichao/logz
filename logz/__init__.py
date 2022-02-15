@@ -19,6 +19,7 @@ from logging.handlers import BaseRotatingHandler
 LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
              'lineno', 'asctime', 'thread', 'threadName', 'process', 'message')
 
+LOGGER_NAME = 'logz'
 
 LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
 
@@ -161,11 +162,11 @@ class DecoLogger(logging.Logger):
 
 
 class Log(object):
-    def __init__(self, name=__name__, logger_class=None):
+    def __init__(self, name=LOGGER_NAME, logger_class=None):
         self.name = name
-        # self.__logger = logging.getLogger(name)
-        logger_class = logger_class or Logger
-        self.__logger = logger_class(name)
+        self.__logger = logging.getLogger(name)
+        # logger_class = logger_class or Logger
+        # self.__logger = logger_class(name)
         self.__format = logging.Formatter(LOG_FORMAT)
         self.__level = logging.DEBUG
         self.__extra = None
@@ -222,6 +223,7 @@ class Log(object):
 
     @file.setter
     def file(self, value):  # todo
+        value = str(value)  # 如果是PosixPath路径，则转为字符串
         if '%' in value:
             value = datetime.now().strftime(value)
             fh = DayRotatingHandler(value, 'a', encoding='utf-8')

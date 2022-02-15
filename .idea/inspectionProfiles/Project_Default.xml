@@ -1,0 +1,26 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="13">
+            <item index="0" class="java.lang.String" itemvalue="build" />
+            <item index="1" class="java.lang.String" itemvalue="cffi" />
+            <item index="2" class="java.lang.String" itemvalue="protobuf" />
+            <item index="3" class="java.lang.String" itemvalue="fabric" />
+            <item index="4" class="java.lang.String" itemvalue="django-simpleui" />
+            <item index="5" class="java.lang.String" itemvalue="chainmaker" />
+            <item index="6" class="java.lang.String" itemvalue="pytest" />
+            <item index="7" class="java.lang.String" itemvalue="sha3" />
+            <item index="8" class="java.lang.String" itemvalue="chainmaker-python-sdk" />
+            <item index="9" class="java.lang.String" itemvalue="qtaf" />
+            <item index="10" class="java.lang.String" itemvalue="tenacity" />
+            <item index="11" class="java.lang.String" itemvalue="grpcio" />
+            <item index="12" class="java.lang.String" itemvalue="mysql-connector-python" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
