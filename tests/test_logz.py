@@ -100,8 +100,13 @@ def test_log_with_extra(caplog):
     log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
     log.info('hello with no user')
     log.info('hello with kevin', extra={'user': 'Kevin'})
+    log.extra = {'user': 'hzc'}
+    log.info('hello with no user')
+    log.info('hello with kevin', extra={'user': 'Kevin'})
     assert getattr(caplog.records[0], 'user') is None
     assert getattr(caplog.records[1], 'user') == 'Kevin'
+    assert getattr(caplog.records[2], 'user') == 'hzc'
+    assert getattr(caplog.records[3], 'user') == 'Kevin'
     
     
 def test_log_multi_lines(caplog):
@@ -135,7 +140,6 @@ def test_method_with_logit(caplog):  # Fixme
             return a + b
 
     Calculator.add(2, 30)
-
 
 
 

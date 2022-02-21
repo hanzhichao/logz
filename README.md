@@ -180,6 +180,7 @@ Calculator.add(2,30)
 
 
 ### 待完善
+- [ ] 通用extra字段及默认值配置
 - log file to config maxBytes or else
 - log to html
 - log to db

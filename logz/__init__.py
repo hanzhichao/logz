@@ -164,14 +164,16 @@ class DecoLogger(logging.Logger):
 class Log(object):
     def __init__(self, name=LOGGER_NAME, logger_class=None):
         self.name = name
-        self.__logger = logging.getLogger(name)
-        # logger_class = logger_class or Logger
-        # self.__logger = logger_class(name)
+        if logger_class is not None:
+            self.__logger = logger_class(name)
+        else:
+            self.__logger = logging.getLogger(name)
         self.__format = logging.Formatter(LOG_FORMAT)
         self.__level = logging.DEBUG
         self.__extra = None
         self.__file = None
         self.__email = None
+        self.__extra = None
 
         self.verbosity = None
         self.filter = None
@@ -233,7 +235,15 @@ class Log(object):
         fh.setFormatter(self.__format)
         self.__file = value
         self.__logger.addHandler(fh)
-
+    
+    @property
+    def extra(self):
+        return self.__extra
+    
+    @extra.setter
+    def extra(self, value):
+        self.__extra = value
+        
     @property
     def email(self):
         return self.__email
