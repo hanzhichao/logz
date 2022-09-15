@@ -21,7 +21,8 @@ LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
 
 LOGGER_NAME = 'logz'
 
-LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+# LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+LOG_FORMAT = '%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s'
 
 LOG_LEVEL_MAP = {
     'debug': logging.DEBUG,
@@ -332,7 +333,7 @@ class Log(object):
         self.log('critical', msg, *args, **kwargs)
 
 
-log = Log()
+logger = log = Log()
 
 
 def _to_string(args, kwargs):
