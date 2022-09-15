@@ -19,10 +19,11 @@ from logging.handlers import BaseRotatingHandler
 LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
              'lineno', 'asctime', 'thread', 'threadName', 'process', 'message')
 
-LOGGER_NAME = 'logz'
+DEFAULT_LOGGER_NAME = 'logz'
 
-# LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
-LOG_FORMAT = '%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s'
+# DEFAULT_LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+DEFAULT_LOG_FORMAT = '%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s'
+DEFAULT_DATE_FMT = '%Y-%m-%d %H:%M:%S'
 
 LOG_LEVEL_MAP = {
     'debug': logging.DEBUG,
@@ -163,13 +164,13 @@ class DecoLogger(logging.Logger):
 
 
 class Log(object):
-    def __init__(self, name=LOGGER_NAME, logger_class=None):
+    def __init__(self, name=DEFAULT_LOGGER_NAME, logger_class=None):
         self.name = name
         if logger_class is not None:
             self.__logger = logger_class(name)
         else:
             self.__logger = logging.getLogger(name)
-        self.__format = logging.Formatter(LOG_FORMAT)
+        self.__format = logging.Formatter(DEFAULT_LOG_FORMAT, datefmt=DEFAULT_DATE_FMT)
         self.__level = logging.DEBUG
         self.__extra = None
         self.__file = None

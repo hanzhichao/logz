@@ -1,7 +1,7 @@
 import os
 from pprint import pprint
 
-from logz import log, logit, LOGGER_NAME
+from logz import log, logit, DEFAULT_LOGGER_NAME
 import logging
 import pytest
 import re
@@ -23,12 +23,12 @@ def test_log_message(caplog):
         log.exception(ex)
         
     print(caplog.record_tuples)
-    assert caplog.record_tuples == [(LOGGER_NAME, logging.DEBUG, 'debug msg'),
-                                    (LOGGER_NAME, logging.INFO, 'info msg'),
-                                    (LOGGER_NAME, logging.WARNING, 'warning msg'),
-                                    (LOGGER_NAME, logging.ERROR, 'error msg'),
-                                    (LOGGER_NAME, logging.CRITICAL, 'critical msg'),
-                                    (LOGGER_NAME, logging.ERROR, 'assert 0')]
+    assert caplog.record_tuples == [(DEFAULT_LOGGER_NAME, logging.DEBUG, 'debug msg'),
+                                    (DEFAULT_LOGGER_NAME, logging.INFO, 'info msg'),
+                                    (DEFAULT_LOGGER_NAME, logging.WARNING, 'warning msg'),
+                                    (DEFAULT_LOGGER_NAME, logging.ERROR, 'error msg'),
+                                    (DEFAULT_LOGGER_NAME, logging.CRITICAL, 'critical msg'),
+                                    (DEFAULT_LOGGER_NAME, logging.ERROR, 'assert 0')]
     
     
 def test_log_multiple_variables(caplog):
@@ -39,7 +39,7 @@ def test_log_multiple_variables(caplog):
     d = {'name': 'kevin'}
     log.info(a, b, c, d)
     print(caplog.record_tuples)
-    assert caplog.record_tuples == [(LOGGER_NAME, logging.INFO, "hello 1 [2] {'name': 'kevin'}")]
+    assert caplog.record_tuples == [(DEFAULT_LOGGER_NAME, logging.INFO, "hello 1 [2] {'name': 'kevin'}")]
 
 
 def test_log_file(tmp_path):
@@ -113,7 +113,7 @@ def test_log_multi_lines(caplog):
     """测试JSON多行输出和字段缩进"""
     log.info({'foo': 'bar'}, indent=2)
     excepted_msg = '\n'.join(['->', '{', '  "foo": "bar"', '}'])
-    assert caplog.record_tuples == [(LOGGER_NAME, logging.INFO, excepted_msg)]
+    assert caplog.record_tuples == [(DEFAULT_LOGGER_NAME, logging.INFO, excepted_msg)]
 
 
 def test_function_with_logit(caplog):
