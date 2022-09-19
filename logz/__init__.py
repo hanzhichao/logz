@@ -22,7 +22,7 @@ LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
 DEFAULT_LOGGER_NAME = 'logz'
 
 # DEFAULT_LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
-DEFAULT_LOG_FORMAT = '%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s'
+DEFAULT_LOG_FORMAT = '%(asctime)s.%(msecs)03d\t[%(levelname)s]\t%(message)s'
 DEFAULT_DATE_FMT = '%Y-%m-%d %H:%M:%S'
 
 LOG_LEVEL_MAP = {
@@ -216,7 +216,7 @@ class Log(object):
     def format(self, value):
         items = re.findall(r'%\((.*?)\)s', value)
         self.__extra = {key: None for key in (set(items)-set(LOG_ITEMS))}
-        self.__format = logging.Formatter(value)
+        self.__format = logging.Formatter(value, datefmt=DEFAULT_DATE_FMT)
 
         for handler in self.__logger.handlers:
             handler.setFormatter(self.__format)
