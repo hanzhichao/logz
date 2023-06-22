@@ -1,6 +1,11 @@
 ### Logz
 Log Easy 快速上手的日志记录工具
 
+![Languate - Python](https://img.shields.io/badge/language-python-blue.svg)
+![PyPI - License](https://img.shields.io/pypi/l/logz)
+![PyPI](https://img.shields.io/pypi/v/logz)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/logz)
+
 ### 特性
 
 - 上手容易
