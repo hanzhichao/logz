@@ -1,18 +1,14 @@
 """日志配置"""
-import re
-import os
-import io
-import json
-from datetime import datetime
-import time
 import inspect
-from collections import defaultdict
+import json
 import logging
+import re
 import smtplib
-from email.mime.text import MIMEText
-from logging import addLevelName, currentframe
-import traceback
 import threading
+import time
+from collections import defaultdict
+from datetime import datetime
+from email.mime.text import MIMEText
 from functools import wraps
 from logging.handlers import BaseRotatingHandler
 
@@ -92,75 +88,13 @@ class HTMLHandler(logging.FileHandler):
 class Logger(logging.Logger):
     """Rewrite findCaller to show the real funcName"""
     def findCaller(self, stack_info=False, stacklevel=1):
-        _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
-        f = currentframe()
-        if f is not None:
-            f = f.f_back
-            try:
-                f = getattr(f.f_back, 'f_back', None)
-            except:
-                pass
-            rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == _srcfile:
-                f = f.f_back
-                try:
-                    f = getattr(f.f_back, 'f_back', None)
-                except:
-                    pass
-                continue
-            sinfo = None
-            if stack_info:
-                sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
-                traceback.print_stack(f, file=sio)
-                sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
-                    sinfo = sinfo[:-1]
-                sio.close()
-            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
-            break
-        return rv
+        stacklevel = getattr(self, 'stacklevel') if hasattr(self, 'stacklevel') else stacklevel
+        return super().findCaller(stack_info, stacklevel)
 
 
-class DecoLogger(logging.Logger):
+class DecoLogger(Logger):
     """Rewrite findCaller to show the real funcName for logit decorator"""
-    def findCaller(self, stack_info=False, stacklevel=1):
-        _srcfile = os.path.normcase(addLevelName.__code__.co_filename)
-        f = currentframe()
-        if f is not None:
-            f = f.f_back
-            try:
-                f = getattr(f.f_back, 'f_back', None)
-                f = getattr(f.f_back, 'f_back', None)
-            except:
-                pass
-            rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
-            co = f.f_code
-            filename = os.path.normcase(co.co_filename)
-            if filename == _srcfile:
-                f = f.f_back
-                try:
-                    f = getattr(f.f_back, 'f_back', None)
-                    f = getattr(f.f_back, 'f_back', None)
-                except:
-                    pass
-                continue
-            sinfo = None
-            if stack_info:
-                sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
-                traceback.print_stack(f, file=sio)
-                sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
-                    sinfo = sinfo[:-1]
-                sio.close()
-            rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
-            break
-        return rv
+    pass
 
 
 class Log(object):
@@ -191,6 +125,7 @@ class Log(object):
 
         self.__logger.setLevel(self.__level)
         self.__logger.addHandler(ch)
+        self.__f_back_times = 1
 
     @property
     def level(self):
@@ -274,6 +209,14 @@ class Log(object):
     @property
     def logger(self):
         return self.__logger
+
+    @property
+    def stacklevel(self):
+        return self.__stacklevel
+
+    @stacklevel.setter
+    def stacklevel(self, value):
+        self.__logger.stacklevel = self.__stacklevel = value
 
     def log(self, level, msg, *args, **kwargs):
         if args:

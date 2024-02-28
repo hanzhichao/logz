@@ -131,13 +131,20 @@ log.format = '%(levelname)s|%(filename)s|%(funcName)s|%(lineno)d|%(message)s'
 #### 使用额外字段
 ```
 log.format = '%(asctime)s %(levelname)s %(user)s %(message)s'
+# 未设置user默认值
 log.info('hello with no user')
-log.info('hello with kevin', extra={'user': 'Kevin'})
+log.info('hello with kevin', extra={'user': 'kevin'})
+# 设置user默认值
+log.extra = {'user': 'hzc'}
+log.info('hello with default user')
+log.info('hello with kevin', extra={'user': 'kevin'})
 ```
 输出:
 ```
-2019-12-12 22:45:18,604 INFO None hello with no user
-2019-12-12 22:45:18,604 INFO kevin hello with kevin
+2022-02-21 12:23:01,074 INFO None hello with no user
+2022-02-21 12:23:01,074 INFO kevin hello with kevin
+2022-02-21 12:23:01,075 INFO hzc hello with default user
+2022-02-21 12:23:01,075 INFO kevin hello with kevin
 ```
 
 ### JSON多行输出和字段缩进

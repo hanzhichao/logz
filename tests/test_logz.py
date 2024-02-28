@@ -1,7 +1,7 @@
 import os
 from pprint import pprint
 
-from logz import log, logit, DEFAULT_LOGGER_NAME
+from logz import Log, Logger, log, logit, DEFAULT_LOGGER_NAME
 import logging
 import pytest
 import re
@@ -39,7 +39,7 @@ def test_log_multiple_variables(caplog):
     d = {'name': 'kevin'}
     log.info(a, b, c, d)
     print(caplog.record_tuples)
-    assert caplog.record_tuples == [(DEFAULT_LOGGER_NAME, logging.INFO, "hello 1 [2] {'name': 'kevin'}")]
+    assert caplog.record_tuples == [(LOGGER_NAME, logging.INFO, "hello 1 [2] {'name': 'kevin'}")]
 
 
 def test_log_file(tmp_path):
@@ -113,7 +113,7 @@ def test_log_multi_lines(caplog):
     """测试JSON多行输出和字段缩进"""
     log.info({'foo': 'bar'}, indent=2)
     excepted_msg = '\n'.join(['->', '{', '  "foo": "bar"', '}'])
-    assert caplog.record_tuples == [(DEFAULT_LOGGER_NAME, logging.INFO, excepted_msg)]
+    assert caplog.record_tuples == [(LOGGER_NAME, logging.INFO, excepted_msg)]
 
 
 def test_function_with_logit(caplog):
@@ -142,6 +142,15 @@ def test_method_with_logit(caplog):  # Fixme
     Calculator.add(2, 30)
 
 
+def test_find_cellar():
+    print()
+    log = Log(logger_class=Logger)
+    log.format = '%(levelname)s|%(filename)s|%(funcName)s|%(lineno)d|%(message)s'
+    log.info('info msg')
+    log.stacklevel = 8
+
+    def func1():
+        log.info('hello')
 
 
 
