@@ -15,11 +15,9 @@ from logging.handlers import BaseRotatingHandler
 LOG_ITEMS = ('name', 'levelno', 'levelname', 'pathname', 'filename', 'funcName',
              'lineno', 'asctime', 'thread', 'threadName', 'process', 'message')
 
-DEFAULT_LOGGER_NAME = 'logz'
+LOGGER_NAME = 'logz'
 
-# DEFAULT_LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
-DEFAULT_LOG_FORMAT = '%(asctime)s.%(msecs)03d\t[%(levelname)s]\t%(message)s'
-DEFAULT_DATE_FMT = '%Y-%m-%d %H:%M:%S'
+LOG_FORMAT = '%(asctime)s %(levelname)s %(message)s'
 
 LOG_LEVEL_MAP = {
     'debug': logging.DEBUG,
@@ -98,13 +96,14 @@ class DecoLogger(Logger):
 
 
 class Log(object):
-    def __init__(self, name=DEFAULT_LOGGER_NAME, logger_class=None):
+    def __init__(self, name=LOGGER_NAME, logger_class=None):
         self.name = name
         if logger_class is not None:
             self.__logger = logger_class(name)
         else:
             self.__logger = logging.getLogger(name)
-        self.__format = logging.Formatter(DEFAULT_LOG_FORMAT, datefmt=DEFAULT_DATE_FMT)
+        self.__datefmt = None
+        self.__format = logging.Formatter(LOG_FORMAT, datefmt=self.__datefmt)
         self.__level = logging.DEBUG
         self.__extra = None
         self.__file = None
@@ -151,10 +150,19 @@ class Log(object):
     def format(self, value):
         items = re.findall(r'%\((.*?)\)s', value)
         self.__extra = {key: None for key in (set(items)-set(LOG_ITEMS))}
-        self.__format = logging.Formatter(value, datefmt=DEFAULT_DATE_FMT)
+        self.__format = logging.Formatter(value)
 
         for handler in self.__logger.handlers:
             handler.setFormatter(self.__format)
+
+    @property
+    def datefmt(self):
+        return self.__datefmt
+
+    @datefmt.setter
+    def datefmt(self, value):
+        self.__datefmt = value
+        self.__format.datefmt = value
 
     @property
     def file(self):
@@ -277,7 +285,7 @@ class Log(object):
         self.log('critical', msg, *args, **kwargs)
 
 
-logger = log = Log()
+log = Log()
 
 
 def _to_string(args, kwargs):
